@@ -36,11 +36,10 @@ count_points.(input) |> sum |> println
 
 # Part 2
 function part2(input)
-    new_input = collect(enumerate(input))
+    new_input = map(x -> sum(x[2] .∈ Ref(x[1])), input) |> enumerate |> collect
     count = 0
-    for (index, (winning, actual)) in new_input
+    for (index, ammount_of_winning) in new_input
         count += 1
-        ammount_of_winning = sum(actual .∈ Ref(winning))
         if ammount_of_winning > 0
             push!.(Ref(new_input), new_input[index+1:index+ammount_of_winning])
         end
