@@ -35,7 +35,7 @@ function gethandtype(a)
     return 1 # High card
 end
 
-letter_order = Dict('A' => 5, 'T' => 1, 'J' => 2, 'Q' => 3, 'K' => 4)
+letter_order = "23456789TJQKA"
 
 function compare_cards(a, b) # works as is less
     for (f, l) in zip(a, b)
@@ -43,19 +43,7 @@ function compare_cards(a, b) # works as is less
             continue
         end
 
-        if isdigit(f) && isdigit(l)
-            return f < l           
-        end
-
-        if isdigit(f)
-            return true
-        end
-
-        if isdigit(l)
-            return false
-        end
-
-        return letter_order[f] < letter_order[l]
+        return findfirst(==(f), letter_order) < findfirst(==(l), letter_order)
     end
 end
 
@@ -73,79 +61,27 @@ sorted = sort(input, lt=handissmaller)
 enumerate(sorted) |> x -> map(y -> y[1] * y[2][2], x) |> sum |> println
 
 # Part 2
-letter_order = Dict('A' => 5, 'T' => 2, 'Q' => 3, 'K' => 4)
+letter_order = "J23456789TQKA"
 
-function compare_cards(a, b) # works as is less
-    for (f, l) in zip(a, b)
-        if f == l
-            continue
-        end
-
-        if f == 'J'
-            return true
-        end
-
-        if l == 'J'
-            return false
-        end
-
-        if isdigit(f) && isdigit(l)
-            return f < l           
-        end
-
-        if isdigit(f)
-            return true
-        end
-
-        if isdigit(l)
-            return false
-        end
-
-        return letter_order[f] < letter_order[l]
-    end
-end
 function new_gethandtype(a)
     c = counter(collect(a))
-    letters = keys(c)
-    ocurrences = values(c)
+    letters = keys(c) |> collect
+    ocurrences = values(c) |> collect
+
     if !('J' in letters)
         return gethandtype(a)
     end
-    
+
     number_of_jacks = c['J']
 
-    if number_of_jacks == 5 || number_of_jacks == 4
+    if number_of_jacks == 5 
         return 7 # Five of a kind
     end
 
-    if number_of_jacks == 3
-        if 2 in ocurrences
-            return 7 # Five of a kind
-        else
-            return 6 # Four of a kind
-        end
-    end
+    sorted = sort(zip(letters, ocurrences) |> collect, lt=(a, b) -> a[2] > b[2])
+    highest_non_jack = findfirst(x -> x[1] != 'J', sorted) |> x -> sorted[x]
 
-    if number_of_jacks == 2
-        if 3 in ocurrences
-            return 7 # Five of a kind
-        elseif count(==(2), ocurrences) == 2
-            return 6 # Four of a kind
-        else
-            return 5 # Three of a kind
-        end
-    end
-
-    if 4 in ocurrences
-        return 7
-    end
-    if 3 in ocurrences
-        return 6
-    end
-    if 2 in ocurrences
-        return 5
-    end
-    return 2
+    replace(a, 'J' => highest_non_jack[1]) |> gethandtype
 end
 
 sorted = sort(input, lt=(a, b) -> handissmaller(a, b, handtype=new_gethandtype))
